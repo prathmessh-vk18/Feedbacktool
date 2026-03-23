@@ -1,0 +1,247 @@
+/* ── content.css — Design Feedback annotation overlay ── */
+
+#df-root {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  display: none;
+  font-family: -apple-system, 'Helvetica Neue', sans-serif;
+}
+#df-root.df-visible { display: block; }
+
+/* Frozen screenshot background */
+#df-bg {
+  position: absolute;
+  inset: 0;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+
+/* Drawing canvas on top */
+#df-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+/* ── Toolbar ───────────────────────────────────────────────────── */
+#df-toolbar {
+  position: absolute;
+  top: auto;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #111111;
+  border: 1px solid rgba(255,255,255,0.13);
+  border-radius: 14px;
+  padding: 7px 11px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.7);
+  z-index: 10;
+  user-select: none;
+  max-width: calc(100vw - 40px);
+}
+
+.df-toolbar-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+  padding-right: 9px;
+  border-right: 1px solid rgba(255,255,255,0.1);
+  margin-right: 3px;
+}
+
+/* Tool buttons */
+.df-tool-btn {
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: rgba(255,255,255,0.55);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.12s;
+  padding: 0;
+}
+.df-tool-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.df-tool-btn.df-active {
+  background: #FF3B5C;
+  border-color: rgba(255,59,92,0.4);
+  color: #fff;
+  box-shadow: 0 0 10px rgba(255,59,92,0.35);
+}
+.df-tool-btn svg {
+  width: 16px; height: 16px;
+  stroke: currentColor; fill: none;
+  stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* Divider */
+.df-sep {
+  width: 1px; height: 22px;
+  background: rgba(255,255,255,0.1);
+  margin: 0 4px;
+}
+
+/* Color swatches */
+.df-swatch {
+  width: 17px; height: 17px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  flex-shrink: 0;
+  transition: transform 0.12s, border-color 0.12s;
+}
+.df-swatch:hover,
+.df-swatch.df-active { border-color: #fff; transform: scale(1.2); }
+
+/* Stroke size buttons */
+.df-size-btn {
+  width: 26px; height: 26px;
+  border-radius: 5px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: rgba(255,255,255,0.5);
+  font-size: 10px; font-weight: 700;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.df-size-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.df-size-btn.df-active {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border-color: rgba(255,255,255,0.2);
+}
+
+/* Undo button */
+.df-undo-btn {
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: transparent;
+  color: rgba(255,255,255,0.5);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.12s;
+}
+.df-undo-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.df-undo-btn svg {
+  width: 15px; height: 15px;
+  stroke: currentColor; fill: none;
+  stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* Save button */
+.df-save-btn {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: none;
+  background: #FF3B5C;
+  color: #fff;
+  font-size: 12px; font-weight: 700;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 7px;
+  box-shadow: 0 4px 12px rgba(255,59,92,0.35);
+  transition: all 0.12s;
+}
+.df-save-btn:hover { background: #ff5470; transform: translateY(-1px); }
+.df-save-btn svg {
+  width: 13px; height: 13px;
+  stroke: #fff; fill: none;
+  stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* Close button */
+.df-close-btn {
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: transparent;
+  color: rgba(255,255,255,0.45);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.12s;
+}
+.df-close-btn:hover { background: rgba(255,80,80,0.14); color: #ff5555; }
+.df-close-btn svg {
+  width: 14px; height: 14px;
+  stroke: currentColor; fill: none;
+  stroke-width: 2; stroke-linecap: round;
+}
+
+/* ── Comment bar ───────────────────────────────────────────────── */
+#df-comment-bar {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #111111;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 9px 14px;
+  display: flex; align-items: center; gap: 10px;
+  width: 460px; max-width: calc(100vw - 40px);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+  z-index: 10;
+}
+#df-comment-bar span {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: rgba(255,255,255,0.28);
+  white-space: nowrap;
+}
+#df-comment-input {
+  flex: 1;
+  background: transparent; border: none; outline: none;
+  color: rgba(255,255,255,0.85); font-size: 13px;
+  font-family: -apple-system, 'Helvetica Neue', sans-serif;
+}
+#df-comment-input::placeholder { color: rgba(255,255,255,0.28); }
+
+/* ── Text label popup ──────────────────────────────────────────── */
+#df-text-popup {
+  position: absolute;
+  background: #1a1a1a;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 9px;
+  padding: 7px 10px;
+  display: none; align-items: center; gap: 7px;
+  z-index: 20;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#df-text-popup.df-visible { display: flex; }
+#df-text-popup input {
+  background: transparent; border: none; outline: none;
+  color: #fff; font-size: 14px; font-weight: 700;
+  font-family: -apple-system, sans-serif;
+  width: 160px;
+}
+#df-text-popup button {
+  background: #FF3B5C; border: none; color: #fff;
+  border-radius: 5px; padding: 3px 9px;
+  font-size: 11px; font-weight: 700; cursor: pointer;
+}
+
+/* ── Toast notification ────────────────────────────────────────── */
+#df-toast {
+  position: absolute;
+  bottom: 82px; left: 50%;
+  transform: translateX(-50%) translateY(6px);
+  background: #1a1a1a;
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.85);
+  font-size: 12px; font-weight: 600;
+  padding: 8px 16px; border-radius: 9px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.45);
+  opacity: 0; transition: all 0.18s ease;
+  z-index: 30; pointer-events: none; white-space: nowrap;
+}
+#df-toast.df-visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+#df-toast.df-success { border-color: rgba(52,211,153,0.35); color: #34D399; }
