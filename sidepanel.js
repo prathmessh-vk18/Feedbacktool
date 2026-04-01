@@ -34,14 +34,6 @@ function bindEvents() {
     if (!res?.ok) showToast('Cannot capture this tab — try a normal webpage', 'err');
   });
 
-  $('selAllBtn').addEventListener('click', () => {
-    screenshots.forEach(s => selected.add(s.id));
-    renderList(); updateStats();
-  });
-
-  $('clearBtn').addEventListener('click', () => {
-    selected.clear(); renderList(); updateStats();
-  });
 
   $('delSelBtn').addEventListener('click', async () => {
     await sendMsg({ action: 'deleteMany', ids: [...selected] });

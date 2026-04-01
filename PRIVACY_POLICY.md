@@ -1,4 +1,4 @@
-# Privacy Policy for Pinpoint Extension
+o # Privacy Policy for Pinpoint Extension
 
 **Effective Date:** March 23, 2026
 

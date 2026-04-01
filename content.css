@@ -44,7 +44,10 @@
   z-index: 10;
   user-select: none;
   max-width: calc(100vw - 40px);
+  transform-origin: center bottom;
+  transition: transform 0.1s ease-out;
 }
+
 
 .df-toolbar-label {
   font-size: 10px;
@@ -101,23 +104,6 @@
 .df-swatch:hover,
 .df-swatch.df-active { border-color: #fff; transform: scale(1.2); }
 
-/* Stroke size buttons */
-.df-size-btn {
-  width: 26px; height: 26px;
-  border-radius: 5px;
-  border: 1px solid transparent;
-  background: transparent;
-  color: rgba(255,255,255,0.5);
-  font-size: 10px; font-weight: 700;
-  cursor: pointer;
-  transition: all 0.12s;
-}
-.df-size-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
-.df-size-btn.df-active {
-  background: rgba(255,255,255,0.15);
-  color: #fff;
-  border-color: rgba(255,255,255,0.2);
-}
 
 /* Undo button */
 .df-undo-btn {
@@ -245,3 +231,17 @@
 }
 #df-toast.df-visible { opacity: 1; transform: translateX(-50%) translateY(0); }
 #df-toast.df-success { border-color: rgba(52,211,153,0.35); color: #34D399; }
+
+/* ── Capture Flash Effect ──────────────────────────────────────── */
+#df-flash {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  z-index: 2147483647;
+  pointer-events: none;
+  opacity: 1;
+}
+.df-fade-out {
+  opacity: 0 !important;
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}

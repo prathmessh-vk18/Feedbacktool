@@ -13,6 +13,8 @@
   let currentWidth = 3;
   let pageUrl      = '';
   let pageTimestamp= '';
+  let scale        = 1;
+
 
   // ── Listen for message from background ────────────────────────
   chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
@@ -58,8 +60,49 @@
     canvas.addEventListener('mouseup',   onUp);
     canvas.addEventListener('mouseleave', onUp);
 
+    // Keyboard shortcuts: Delete/Backspace to undo
+    window.addEventListener('keydown', onKey);
+
+    // Zoom resistance
+    window.visualViewport?.addEventListener('resize', updateZoomScale);
+    updateZoomScale();
+
     // Block scroll from passing through
     root.addEventListener('wheel', e => e.stopPropagation(), { passive: false });
+
+    // Initial tool state (sets cursor)
+    selectTool('rect');
+
+    // Camera flash effect
+    showFlash();
+  }
+
+  function onKey(e) {
+    if (!root) return;
+    if (e.key === 'Delete' || e.key === 'Backspace') {
+      // Don't undo if typing in a note or label
+      if (document.activeElement.tagName === 'INPUT') return;
+      undoLast();
+    }
+  }
+
+  function updateZoomScale() {
+    if (!root) return;
+    const v = window.visualViewport;
+    if (v) {
+      scale = 1 / v.scale;
+      const tb = root.querySelector('#df-toolbar');
+      const cb = root.querySelector('#df-comment-bar');
+      if (tb) tb.style.transform = `translateX(-50%) scale(${scale})`;
+      if (cb) cb.style.transform = `translateX(-50%) scale(${scale})`;
+    }
+  }
+
+  function showFlash() {
+    const flash = make('div', { id: 'df-flash' });
+    root.appendChild(flash);
+    setTimeout(() => flash.classList.add('df-fade-out'), 50);
+    setTimeout(() => flash.remove(), 600);
   }
 
   // ── Toolbar ───────────────────────────────────────────────────
@@ -70,8 +113,8 @@
     { id: 'text',   svg: '<polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/>' },
     { id: 'pen',    svg: '<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4z"/>' },
   ];
-  const COLORS = ['#FF3B5C', '#FFCC00', '#34D399', '#60A5FA', '#ffffff', '#000000'];
-  const SIZES  = [{ w: 2, lbl: '—' }, { w: 3, lbl: '━' }, { w: 5, lbl: '▬' }];
+  const COLORS = ['#FF3B5C', '#000000', '#ffffff'];
+
 
   function buildToolbar() {
     const tb = make('div', { id: 'df-toolbar' });
@@ -102,16 +145,6 @@
       tb.appendChild(sw);
     });
 
-    tb.appendChild(sep());
-
-    // Stroke sizes
-    SIZES.forEach(s => {
-      const btn = make('button', { className: 'df-size-btn' + (s.w === currentWidth ? ' df-active' : '') });
-      btn.dataset.size = s.w;
-      btn.textContent  = s.lbl;
-      btn.addEventListener('click', () => selectSize(s.w));
-      tb.appendChild(btn);
-    });
 
     tb.appendChild(sep());
 
@@ -182,13 +215,6 @@
     currentColor = c;
     root.querySelectorAll('.df-swatch').forEach(s =>
       s.classList.toggle('df-active', s.dataset.color === c)
-    );
-  }
-
-  function selectSize(w) {
-    currentWidth = w;
-    root.querySelectorAll('.df-size-btn').forEach(b =>
-      b.classList.toggle('df-active', +b.dataset.size === w)
     );
   }
 
@@ -382,6 +408,8 @@
   // ── Cleanup ───────────────────────────────────────────────────
   function teardown() {
     if (root) { root.remove(); root = null; }
+    window.removeEventListener('keydown', onKey);
+    window.visualViewport?.removeEventListener('resize', updateZoomScale);
     shapes = []; drawing = false; penPoints = [];
   }
 
