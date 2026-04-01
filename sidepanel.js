@@ -34,7 +34,7 @@ function bindEvents() {
     if (!res?.ok) showToast('Cannot capture this tab — try a normal webpage', 'err');
   });
 
-
+  // Delete selected (footer button)
   $('delSelBtn').addEventListener('click', async () => {
     await sendMsg({ action: 'deleteMany', ids: [...selected] });
     selected.clear();
@@ -112,16 +112,16 @@ function updateStats() {
   $('totalCount').textContent = screenshots.length;
   $('selCount').textContent = selected.size;
 
-  $('bulkBar').classList.toggle('hidden', selected.size === 0);
-  $('bulkLbl').textContent = `${selected.size} selected`;
-  $('dlBtn').disabled = selected.size === 0;
-
-  const hint = $('footerHint');
-  if (selected.size > 0) {
-    hint.innerHTML = `<strong>${selected.size}</strong> screenshot${selected.size > 1 ? 's' : ''} ready — click below to download.`;
-  } else {
-    hint.innerHTML = `Select screenshots above, then download as a <strong>.docx</strong> report.`;
+  // Footer stats
+  const footerSelInfo = $('footerSelInfo');
+  const footerSelCount = $('footerSelCount');
+  if (footerSelInfo && footerSelCount) {
+    footerSelCount.textContent = selected.size;
+    footerSelInfo.classList.toggle('hidden', selected.size === 0);
   }
+
+  $('dlBtn').disabled = selected.size === 0;
+  $('delSelBtn').classList.toggle('hidden', selected.size === 0);
 }
 
 // ── Generate .docx report ─────────────────────────────────────────

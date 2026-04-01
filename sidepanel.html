@@ -4,10 +4,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Design Feedback</title>
+  <title>Pinpoint</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap"
     rel="stylesheet" />
   <link rel="stylesheet" href="sidepanel.css" />
 </head>
@@ -18,15 +19,9 @@
     <!-- Header -->
     <div class="hdr">
       <div class="hdr-left">
-        <div class="logo">
-          <svg viewBox="0 0 24 24">
-            <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
-            <circle cx="12" cy="13" r="4" />
-          </svg>
-        </div>
         <div>
-          <div class="hdr-title">Design Feedback</div>
-          <div class="hdr-sub">UI Review Tool</div>
+          <div class="hdr-title">Pinpoint</div>
+          <div class="hdr-sub">Testing assistive tool</div>
         </div>
       </div>
       <button class="cap-btn" id="capBtn">
@@ -37,6 +32,9 @@
         Capture
       </button>
     </div>
+
+    <!-- Description -->
+    <p class="desc-text">Select Screenshots and then download as a <strong>.docx</strong> report</p>
 
     <!-- Stats row -->
     <div class="stats">
@@ -51,34 +49,30 @@
       </div>
     </div>
 
-    <!-- Bulk action bar (shown when ≥1 selected) -->
-    <div class="bulk hidden" id="bulkBar">
-      <span class="bulk-lbl" id="bulkLbl">0 selected</span>
-      <button class="bulk-del" id="delSelBtn">
-        <svg viewBox="0 0 24 24">
-          <polyline points="3 6 5 6 21 6" />
-          <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2" />
-        </svg>
-        Delete
-      </button>
-    </div>
-
     <!-- Screenshot list -->
     <div class="list" id="list"></div>
 
-    <!-- Footer: report download -->
+    <!-- Footer: action buttons -->
     <div class="footer">
-      <p class="footer-hint" id="footerHint">
-        Select screenshots above, then download as a <strong>.docx</strong> report.
-      </p>
-      <button class="dl-btn" id="dlBtn" disabled>
-        <svg viewBox="0 0 24 24">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-          <polyline points="7 10 12 15 17 10" />
-          <line x1="12" y1="15" x2="12" y2="3" />
-        </svg>
-        Download Report (.docx)
-      </button>
+      <div id="footerSelInfo" class="footer-sel-info hidden">
+        <span id="footerSelCount">0</span> screenshots selected
+      </div>
+      <div class="footer-btns">
+        <button class="dl-btn" id="dlBtn" disabled>
+          <svg viewBox="0 0 24 24">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          Download Report (.docx)
+        </button>
+        <button class="del-btn hidden" id="delSelBtn">
+          <svg viewBox="0 0 24 24">
+            <polyline points="3 6 5 6 21 6" />
+            <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2" />
+          </svg>
+        </button>
+      </div>
     </div>
   </div>
 

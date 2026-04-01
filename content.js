@@ -15,13 +15,16 @@
   let pageTimestamp= '';
   let scale        = 1;
 
-
   // ── Listen for message from background ────────────────────────
   chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     if (msg.action === 'showOverlay') {
       pageUrl       = msg.url;
       pageTimestamp = msg.timestamp;
       buildOverlay(msg.screenshot);
+      sendResponse({ ok: true });
+    }
+    if (msg.action === 'hideOverlay') {
+      teardown();
       sendResponse({ ok: true });
     }
     return true;
@@ -47,7 +50,7 @@
 
     // UI chrome
     root.appendChild(buildToolbar());
-    root.appendChild(buildCommentBar());
+    root.appendChild(buildCloseCorner());
     root.appendChild(buildTextPopup());
     root.appendChild(buildToast());
 
@@ -80,7 +83,7 @@
   function onKey(e) {
     if (!root) return;
     if (e.key === 'Delete' || e.key === 'Backspace') {
-      // Don't undo if typing in a note or label
+      // Don't undo if typing in a label
       if (document.activeElement.tagName === 'INPUT') return;
       undoLast();
     }
@@ -92,9 +95,9 @@
     if (v) {
       scale = 1 / v.scale;
       const tb = root.querySelector('#df-toolbar');
-      const cb = root.querySelector('#df-comment-bar');
+      const closeBtn = root.querySelector('#df-close-corner');
       if (tb) tb.style.transform = `translateX(-50%) scale(${scale})`;
-      if (cb) cb.style.transform = `translateX(-50%) scale(${scale})`;
+      if (closeBtn) closeBtn.style.transform = `scale(${scale})`;
     }
   }
 
@@ -105,6 +108,15 @@
     setTimeout(() => flash.remove(), 600);
   }
 
+  // ── Close corner button (top-right ✕) ─────────────────────────
+  function buildCloseCorner() {
+    const btn = make('button', { id: 'df-close-corner', title: 'Close' });
+    btn.innerHTML = `<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+    btn.addEventListener('mousedown', e => e.stopPropagation());
+    btn.addEventListener('click', teardown);
+    return btn;
+  }
+
   // ── Toolbar ───────────────────────────────────────────────────
   const TOOLS = [
     { id: 'rect',   svg: '<rect x="3" y="5" width="18" height="14" rx="2"/>' },
@@ -113,16 +125,11 @@
     { id: 'text',   svg: '<polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/>' },
     { id: 'pen',    svg: '<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4z"/>' },
   ];
-  const COLORS = ['#FF3B5C', '#000000', '#ffffff'];
-
+  const COLORS = ['#FF3B5C', '#ffffff', '#000000'];
 
   function buildToolbar() {
     const tb = make('div', { id: 'df-toolbar' });
     tb.addEventListener('mousedown', e => e.stopPropagation());
-
-    const lbl = make('span', { className: 'df-toolbar-label' });
-    lbl.textContent = 'Annotate';
-    tb.appendChild(lbl);
 
     // Tool buttons
     TOOLS.forEach(t => {
@@ -138,13 +145,11 @@
     // Color swatches
     COLORS.forEach(c => {
       const sw = make('div', { className: 'df-swatch' + (c === currentColor ? ' df-active' : '') });
-      sw.style.background = c;
-      if (c === '#ffffff') sw.style.boxShadow = 'inset 0 0 0 1px rgba(0,0,0,0.15)';
+      sw.style.setProperty('--swatch-color', c);
       sw.dataset.color = c;
       sw.addEventListener('click', () => selectColor(c));
       tb.appendChild(sw);
     });
-
 
     tb.appendChild(sep());
 
@@ -160,27 +165,7 @@
     save.addEventListener('click', saveShot);
     tb.appendChild(save);
 
-    // Close
-    const close = make('button', { className: 'df-close-btn', title: 'Close' });
-    close.innerHTML = '<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
-    close.addEventListener('click', teardown);
-    tb.appendChild(close);
-
     return tb;
-  }
-
-  function buildCommentBar() {
-    const bar = make('div', { id: 'df-comment-bar' });
-    bar.addEventListener('mousedown', e => e.stopPropagation());
-    const lbl = make('span'); lbl.textContent = 'Note';
-    const inp = make('input', { id: 'df-comment-input', type: 'text', placeholder: 'Add a comment about this issue…', maxlength: '200' });
-    inp.addEventListener('keydown', e => {
-      if (e.key === 'Enter')  saveShot();
-      if (e.key === 'Escape') teardown();
-    });
-    bar.appendChild(lbl);
-    bar.appendChild(inp);
-    return bar;
   }
 
   function buildTextPopup() {
@@ -202,7 +187,7 @@
     return make('div', { id: 'df-toast' });
   }
 
-  // ── Tool / color / size selection ─────────────────────────────
+  // ── Tool / color selection ────────────────────────────────────
   function selectTool(id) {
     currentTool = id;
     root.querySelectorAll('.df-tool-btn').forEach(b =>
@@ -295,7 +280,7 @@
     } else if (s.type === 'pen') {
       drawPen(c, s.pts, s.color, s.lw);
     } else if (s.type === 'text') {
-      c.font = `bold ${14 + s.lw * 2}px -apple-system, sans-serif`;
+      c.font = `bold ${14 + s.lw * 2}px 'Plus Jakarta Sans', sans-serif`;
       c.lineWidth = 3; c.strokeStyle = 'rgba(0,0,0,0.5)';
       c.strokeText(s.text, s.x, s.y);
       c.fillText(s.text, s.x, s.y);
@@ -372,7 +357,6 @@
       fc.drawImage(img, 0, 0, W, H);
       fc.drawImage(canvas, 0, 0);               // annotations on top
       const dataUrl = flat.toDataURL('image/png');
-      const comment = root.querySelector('#df-comment-input')?.value || '';
 
       try {
         const res = await chrome.runtime.sendMessage({
@@ -380,11 +364,19 @@
           image:     dataUrl,
           url:       pageUrl,
           timestamp: pageTimestamp,
-          comment
+          comment:   ''
         });
         if (res?.success) {
+          // Hide canvas and tools immediately so the user can interact with the page
+          if (canvas) canvas.style.display = 'none';
+          if (bgEl) bgEl.style.display = 'none';
+          const tb = root.querySelector('#df-toolbar');
+          if (tb) tb.style.display = 'none';
+          const cc = root.querySelector('#df-close-corner');
+          if (cc) cc.style.display = 'none';
+
           toast('✓ Saved — open the panel to review', true);
-          setTimeout(teardown, 900);
+          setTimeout(teardown, 1500);
         }
       } catch (err) {
         toast('Error saving screenshot', false);

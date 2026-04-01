@@ -22,6 +22,12 @@ chrome.action.onClicked.addListener(async (tab) => {
 });
 
 async function captureAndSend(tab) {
+  // Hide existing overlay to prevent toolbar from being baked into the new screenshot
+  try { 
+    await chrome.tabs.sendMessage(tab.id, { action: 'hideOverlay' }); 
+    await new Promise(r => setTimeout(r, 100)); // allow DOM to update
+  } catch(e) {}
+
   const dataUrl = await chrome.tabs.captureVisibleTab(tab.windowId, { format: 'png' });
   const payload = {
     action: 'showOverlay',
